@@ -19,7 +19,7 @@ def check_plagiarism(files, ressy, filenames):
 
 
  # returns list with actual code from file and list with all filenames   
-
+ # change path as it is in your computer
 def get_Files():
     path = "C:\\Users\\Chinmay\\OneDrive\\Desktop\\testcases"
     dir_list = os.listdir(path)
