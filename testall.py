@@ -1,36 +1,46 @@
 import pycode_similar
 import os
+import time
 
-def check_plagiarism(files, ressy):
-    the_f = []
-    fil = files[0]
-    for i in range(len(files)):
-        x = open(files[i], 'r').read()
-        the_f.append(x)
+#prints out percentages of plagiarized code to resulting textfile
+
+def check_plagiarism(files, ressy, filenames):
+    sum = pycode_similar.detect(files, diff_method=pycode_similar.UnifiedDiff, keep_prints=False, module_level=False)
     result = open(ressy, 'a')
-    sum = pycode_similar.detect(the_f, diff_method=pycode_similar.UnifiedDiff, keep_prints=False, module_level=False)
-    d = dict((x,y) for x,y in sum)
-    result.write("ref : " + fil + '\n')
-    for i in d.values():
-        nus = str((i[0]))
-        result.write(nus + '\n')   
-    result.write('\n')
-    result.close()
+    result.write('\n ref : {} \n\n'.format(filenames[0]))
+    for index, func_ast_diff_list in sum:
+        sum_plagiarism_percent, sum_plagiarism_count, sum_total_count = pycode_similar.summarize(func_ast_diff_list)
+        result.write('candidate : ' + filenames[index] + '\n')
+        result.write('{:.2f} % ({}/{}) of ref code structure is plagiarized by candidate.\n'.format(
+            sum_plagiarism_percent * 100,
+            sum_plagiarism_count,
+            sum_total_count,
+        ))
+
+
+ # returns list with actual code from file and list with all filenames   
 
 def get_Files():
-    path = "C:\\Users\\Chinmay\\testcases"
+    path = "C:\\Users\\Chinmay\\OneDrive\\Desktop\\testcases"
     dir_list = os.listdir(path)
-    return [x for x in dir_list if x.endswith('.py')]
-   
+    newl = [x for x in dir_list if x.endswith('.py')]
+    the_f = []
+    for i in range(len(newl)):
+        x = open(newl[i], 'r').read()
+        the_f.append(x)
+    return [the_f, newl]
 
-filestoput = get_Files()
-filestoput.pop(0)
 
+filestoput, indexes = get_Files()[0], get_Files()[1]
 
 
 resi = 'temp.txt'
 
-for j in range(len(filestoput)):
-    check_plagiarism(filestoput, resi)
-    back = filestoput.pop(0)
-    filestoput.append(back)
+start = time.time()
+for i in range(len(indexes)):
+    check_plagiarism(filestoput, resi, indexes)
+    filestoput.append(filestoput.pop(0))
+    indexes.append(indexes.pop(0))
+end = time.time()
+
+print(end-start)
